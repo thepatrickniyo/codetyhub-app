@@ -1,5 +1,5 @@
 name: codetyhub_app
-description: "A new Flutter project."
+description: "CodetyHub - Learn AI skills with curated pathways and courses."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -37,6 +37,7 @@ dependencies:
   get: ^4.7.3
   google_fonts: ^6.3.2
   flutter_svg: ^2.2.2
+  get_storage: ^2.1.1
 
 dev_dependencies:
   flutter_test:
