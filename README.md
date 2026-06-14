@@ -3,6 +3,10 @@
 CodetyHub is a premium, personalized AI-assisted STEM learning platform featuring a Flutter mobile client app, a Python FastAPI Machine Learning microservice, and a Node.js API Gateway bridge.
 
 ---
+## Repository Link
+https://github.com/thepatrickniyo/codetyhub-app.git 
+
+---
 
 ## Demo Video
 
