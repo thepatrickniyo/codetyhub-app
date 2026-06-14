@@ -46,5 +46,25 @@ class PathwayModel {
         return Icons.school_outlined;
     }
   }
+
+  /// Returns a curated Unsplash cover image URL for this pathway.
+  String get imageUrl {
+    switch (id) {
+      case 'ml-fundamentals':
+        return 'https://images.unsplash.com/photo-1677442135703-1787eea5ce01?w=800&q=80&fit=crop';
+      case 'deep-learning':
+        return 'https://images.unsplash.com/photo-1620712943543-bcc4688e7485?w=800&q=80&fit=crop';
+      case 'nlp':
+        return 'https://images.unsplash.com/photo-1655720828018-edd2daec9349?w=800&q=80&fit=crop';
+      case 'computer-vision':
+        return 'https://images.unsplash.com/photo-1633412802994-5c058f151b66?w=800&q=80&fit=crop';
+      case 'generative-ai':
+        return 'https://images.unsplash.com/photo-1686191128892-3b37add4c844?w=800&q=80&fit=crop';
+      case 'mlops':
+        return 'https://images.unsplash.com/photo-1667372393119-3d4c48d07fc9?w=800&q=80&fit=crop';
+      default:
+        return 'https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=800&q=80&fit=crop';
+    }
+  }
 }
 
