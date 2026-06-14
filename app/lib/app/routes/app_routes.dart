@@ -4,10 +4,12 @@ import '../controllers/auth_controller.dart';
 import '../controllers/home_controller.dart';
 import '../controllers/nav_controller.dart';
 import '../controllers/pathway_controller.dart';
+import '../controllers/quiz_controller.dart';
 import '../views/auth/login_view.dart';
 import '../views/auth/signup_view.dart';
 import '../views/home/home_view.dart';
 import '../views/pathway/pathway_detail_view.dart';
+import '../views/quiz/quiz_view.dart';
 import '../views/splash/splash_view.dart';
 
 class AppRoutes {
@@ -18,6 +20,7 @@ class AppRoutes {
   static const signup = '/signup';
   static const home = '/home';
   static const pathway = '/pathway/:id';
+  static const quiz = '/quiz';
 
   static String pathwayDetail(String id) => '/pathway/$id';
 
@@ -54,6 +57,14 @@ class AppRoutes {
       page: () => const PathwayDetailView(),
       binding: BindingsBuilder(() {
         Get.lazyPut<PathwayController>(() => PathwayController());
+      }),
+    ),
+    GetPage(
+      name: quiz,
+      page: () => const QuizView(),
+      transition: Transition.rightToLeft,
+      binding: BindingsBuilder(() {
+        Get.put<QuizController>(QuizController());
       }),
     ),
   ];

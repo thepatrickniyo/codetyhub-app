@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
 import '../../../controllers/home_controller.dart';
+import '../../../routes/app_routes.dart';
 import '../../../theme/app_colors.dart';
 import '../../../widgets/pathway_card.dart';
 
@@ -60,6 +61,9 @@ class PathwaysTab extends StatelessWidget {
                       ),
                     ),
                   ),
+                  const SizedBox(height: 20),
+                  // ── Personalized pathway CTA ──────────────────────────────
+                  _PersonalizedCTA(),
                   const SizedBox(height: 20),
                   // Filter chips
                   SingleChildScrollView(
@@ -143,6 +147,119 @@ class _FilterChip extends StatelessWidget {
           color: isActive ? Colors.white : AppColors.textSecondary,
           fontSize: 13,
           fontWeight: isActive ? FontWeight.w600 : FontWeight.w400,
+        ),
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Personalized Pathway CTA banner
+// ─────────────────────────────────────────────────────────────────────────────
+class _PersonalizedCTA extends StatelessWidget {
+  const _PersonalizedCTA();
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: () => Get.toNamed(AppRoutes.quiz),
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              AppColors.primary,
+              const Color(0xFF1D4ED8),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.primary.withValues(alpha: 0.35),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: const Text(
+                      'AI-Powered',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    'Not sure where\nto start?',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 19,
+                      fontWeight: FontWeight.bold,
+                      height: 1.25,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Take a 10-question quiz and get\nyour personalized learning path.',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.8),
+                      fontSize: 12,
+                      height: 1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 14, vertical: 9),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          'Get My Pathway',
+                          style: TextStyle(
+                            color: AppColors.primary,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w700,
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        Icon(Icons.arrow_forward_rounded,
+                            size: 14, color: AppColors.primary),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            // Decorative brain icon
+            Icon(
+              Icons.psychology_outlined,
+              size: 80,
+              color: Colors.white.withValues(alpha: 0.15),
+            ),
+          ],
         ),
       ),
     );

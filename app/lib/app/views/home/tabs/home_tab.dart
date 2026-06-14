@@ -136,32 +136,36 @@ class _Header extends StatelessWidget {
         // Notification bell
         _IconBtn(icon: Icons.notifications_outlined, onTap: () {}),
         const SizedBox(width: 10),
-        // Avatar
+        // Avatar — tap to open profile sheet
         Obx(() {
-          final initials = (authController.user.value?.name ?? 'LN')
+          final user = authController.user.value;
+          final initials = (user?.name ?? 'LN')
               .split(' ')
               .take(2)
               .map((w) => w.isNotEmpty ? w[0] : '')
               .join()
               .toUpperCase();
-          return Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [AppColors.primary, AppColors.primaryLight],
+          return GestureDetector(
+            onTap: () => _ProfileSheet.show(context, user?.name ?? 'Learner', user?.email ?? ''),
+            child: Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [AppColors.primary, AppColors.primaryLight],
+                ),
+                borderRadius: BorderRadius.circular(12),
               ),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Center(
-              child: Text(
-                initials,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 15,
-                  fontWeight: FontWeight.w700,
+              child: Center(
+                child: Text(
+                  initials,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 15,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
               ),
             ),
@@ -574,6 +578,391 @@ class _LeaderboardRow extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Profile Bottom Sheet
+// ─────────────────────────────────────────────────────────────────────────────
+class _ProfileSheet {
+  static void show(BuildContext context, String name, String email) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _ProfileSheetContent(name: name, email: email),
+    );
+  }
+}
+
+class _ProfileSheetContent extends StatelessWidget {
+  const _ProfileSheetContent({required this.name, required this.email});
+  final String name;
+  final String email;
+
+  // Mock in-progress pathways: id, title, progress 0-1, courses done
+  static const _inProgress = [
+    (
+      id: 'ml-fundamentals',
+      title: 'Machine Learning Fundamentals',
+      progress: 0.42,
+      done: 2,
+      total: 4,
+      colorIndex: 0,
+    ),
+    (
+      id: 'generative-ai',
+      title: 'Generative AI',
+      progress: 0.25,
+      done: 1,
+      total: 4,
+      colorIndex: 4,
+    ),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final initials = name
+        .split(' ')
+        .take(2)
+        .map((w) => w.isNotEmpty ? w[0] : '')
+        .join()
+        .toUpperCase();
+
+    return DraggableScrollableSheet(
+      initialChildSize: 0.72,
+      minChildSize: 0.5,
+      maxChildSize: 0.92,
+      builder: (_, scrollController) {
+        return Container(
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+          ),
+          child: Column(
+            children: [
+              // Drag handle
+              Container(
+                margin: const EdgeInsets.only(top: 12),
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: AppColors.border,
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              Expanded(
+                child: SingleChildScrollView(
+                  controller: scrollController,
+                  physics: const BouncingScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(20, 24, 20, 32),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // ── Profile card ────────────────────────────────────
+                      Row(
+                        children: [
+                          Container(
+                            width: 56,
+                            height: 56,
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  AppColors.primary,
+                                  AppColors.primaryLight,
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                            child: Center(
+                              child: Text(
+                                initials,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 20,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  name,
+                                  style: TextStyle(
+                                    color: AppColors.textPrimary,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                const SizedBox(height: 3),
+                                Text(
+                                  email.isNotEmpty ? email : 'No email set',
+                                  style: TextStyle(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // ── Quick stats ─────────────────────────────────────
+                      Row(
+                        children: [
+                          _QuickStat(
+                            icon: Icons.local_fire_department_rounded,
+                            iconColor: const Color(0xFFFF6B35),
+                            value: '7',
+                            label: 'Streak',
+                          ),
+                          const SizedBox(width: 10),
+                          _QuickStat(
+                            icon: Icons.star_rounded,
+                            iconColor: const Color(0xFFFBBF24),
+                            value: '2.3k',
+                            label: 'XP',
+                          ),
+                          const SizedBox(width: 10),
+                          _QuickStat(
+                            icon: Icons.military_tech_rounded,
+                            iconColor: AppColors.primary,
+                            value: '#12',
+                            label: 'Rank',
+                          ),
+                        ],
+                      ),
+
+                      const SizedBox(height: 28),
+                      Divider(color: AppColors.border),
+                      const SizedBox(height: 20),
+
+                      // ── Current Pathways ────────────────────────────────
+                      Row(
+                        children: [
+                          Text(
+                            'My Pathways',
+                            style: TextStyle(
+                              color: AppColors.textPrimary,
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                          const Spacer(),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 3),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withValues(alpha: 0.12),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              'In Progress',
+                              style: TextStyle(
+                                color: AppColors.primary,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+
+                      ..._inProgress.map((p) {
+                        final color = AppColors.pathwayGradients[
+                            p.colorIndex % AppColors.pathwayGradients.length];
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 12),
+                          child: _PathwayProgressCard(
+                            id: p.id,
+                            title: p.title,
+                            progress: p.progress,
+                            coursesDone: p.done,
+                            coursesTotal: p.total,
+                            color: color,
+                          ),
+                        );
+                      }),
+
+                      const SizedBox(height: 8),
+                      // Empty state if nothing in progress
+                      if (_inProgress.isEmpty)
+                        Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.all(24),
+                          decoration: BoxDecoration(
+                            color: AppColors.surfaceLight,
+                            borderRadius: BorderRadius.circular(14),
+                            border: Border.all(color: AppColors.border),
+                          ),
+                          child: Column(
+                            children: [
+                              Icon(Icons.school_outlined,
+                                  size: 36, color: AppColors.textSecondary),
+                              const SizedBox(height: 10),
+                              Text(
+                                'No pathways started yet',
+                                style: TextStyle(
+                                    color: AppColors.textSecondary, fontSize: 14),
+                              ),
+                            ],
+                          ),
+                        ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _QuickStat extends StatelessWidget {
+  const _QuickStat({
+    required this.icon,
+    required this.iconColor,
+    required this.value,
+    required this.label,
+  });
+  final IconData icon;
+  final Color iconColor;
+  final String value;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 10),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceLight,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: iconColor, size: 20),
+            const SizedBox(height: 6),
+            Text(
+              value,
+              style: TextStyle(
+                color: AppColors.textPrimary,
+                fontSize: 16,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+            Text(
+              label,
+              style:
+                  TextStyle(color: AppColors.textSecondary, fontSize: 11),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PathwayProgressCard extends StatelessWidget {
+  const _PathwayProgressCard({
+    required this.id,
+    required this.title,
+    required this.progress,
+    required this.coursesDone,
+    required this.coursesTotal,
+    required this.color,
+  });
+
+  final String id;
+  final String title;
+  final double progress;
+  final int coursesDone;
+  final int coursesTotal;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final pct = (progress * 100).round();
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.background,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              // Color accent dot
+              Container(
+                width: 10,
+                height: 10,
+                decoration: BoxDecoration(
+                  color: color,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  title,
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '$pct%',
+                style: TextStyle(
+                  color: color,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          // Progress bar
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 5,
+              backgroundColor: color.withValues(alpha: 0.12),
+              valueColor: AlwaysStoppedAnimation<Color>(color),
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            '$coursesDone of $coursesTotal courses completed',
+            style: TextStyle(
+              color: AppColors.textSecondary,
+              fontSize: 12,
+            ),
           ),
         ],
       ),
