@@ -162,6 +162,24 @@ flutter run
 
 ---
 
+## Deployment Plan
+
+The platform is designed to be deployed using modern, cloud-native services:
+
+### 1. Backend Gateway (Node.js Express Bridge)
+- **Host Platform:** Render (Web Service)
+- **Deployment Strategy:** Configured as a Node.js Web Service pulling directly from the `node-bridge` directory. Auto-deploys are triggered on git pushes to the master branch. Port and environment variables (like the ML microservice URL) are mapped dynamically using Render environment groups.
+
+### 2. Machine Learning Core (Python FastAPI)
+- **Host Platform:** Hugging Face (Spaces)
+- **Deployment Strategy:** Deployed as a Hugging Face Space using a custom `Docker` SDK. The space imports the `ML/` package directory, packages it in a lightweight Python container, and exposes the FastAPI endpoints.
+
+### 3. Mobile App Client (Flutter)
+- **Android Client:** Compiled to Android App Bundle (`.aab`) and deployed to the **Google Play Store** under the internal test tracks moving gradually to production.
+- **iOS Client:** Compiled via Xcode and distributed to Apple TestFlight and the **Apple App Store** for public downloads.
+
+---
+
 ## System Verification
 
 To execute the full automated end-to-end integration and API verification suite:
