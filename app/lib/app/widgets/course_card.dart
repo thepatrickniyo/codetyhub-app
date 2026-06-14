@@ -67,7 +67,7 @@ class CourseCard extends StatelessWidget {
                     children: [
                       Text(
                         course.title,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppColors.textPrimary,
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
@@ -78,7 +78,7 @@ class CourseCard extends StatelessWidget {
                         course.description,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppColors.textSecondary,
                           fontSize: 13,
                           height: 1.4,
@@ -100,7 +100,7 @@ class CourseCard extends StatelessWidget {
                           const SizedBox(width: 4),
                           Text(
                             course.duration,
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: AppColors.textSecondary,
                               fontSize: 12,
                             ),
@@ -114,30 +114,30 @@ class CourseCard extends StatelessWidget {
                           const SizedBox(width: 4),
                           Text(
                             '${course.lessons} lessons',
-                            style: const TextStyle(
+                            style: TextStyle(
                               color: AppColors.textSecondary,
                               fontSize: 12,
                             ),
                           ),
-                          const Spacer(),
-                          Row(
-                            children: [
-                              const Icon(
-                                Icons.star_rounded,
-                                size: 14,
-                                color: Color(0xFFFBBF24),
-                              ),
-                              const SizedBox(width: 2),
-                              Text(
-                                course.rating.toStringAsFixed(1),
-                                style: const TextStyle(
-                                  color: AppColors.textPrimary,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
+                          // const Spacer(),
+                          // Row(
+                          //   children: [
+                          //     const Icon(
+                          //       Icons.star_rounded,
+                          //       size: 14,
+                          //       color: Color(0xFFFBBF24),
+                          //     ),
+                          //     const SizedBox(width: 2),
+                          //     Text(
+                          //       course.rating.toStringAsFixed(1),
+                          //       style: TextStyle(
+                          //         color: AppColors.textPrimary,
+                          //         fontSize: 12,
+                          //         fontWeight: FontWeight.w600,
+                          //       ),
+                          //     ),
+                          //   ],
+                          // ),
                         ],
                       ),
                     ],

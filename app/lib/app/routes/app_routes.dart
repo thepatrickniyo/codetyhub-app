@@ -2,6 +2,7 @@ import 'package:get/get.dart';
 
 import '../controllers/auth_controller.dart';
 import '../controllers/home_controller.dart';
+import '../controllers/nav_controller.dart';
 import '../controllers/pathway_controller.dart';
 import '../views/auth/login_view.dart';
 import '../views/auth/signup_view.dart';
@@ -45,6 +46,7 @@ class AppRoutes {
       binding: BindingsBuilder(() {
         Get.lazyPut<HomeController>(() => HomeController());
         Get.lazyPut<AuthController>(() => AuthController(Get.find()));
+        Get.lazyPut<NavController>(() => NavController());
       }),
     ),
     GetPage(

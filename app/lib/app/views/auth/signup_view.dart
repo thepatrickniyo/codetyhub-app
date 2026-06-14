@@ -61,7 +61,7 @@ class _SignupViewState extends State<SignupView> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Create account',
                   style: TextStyle(
                     color: AppColors.textPrimary,
@@ -70,7 +70,7 @@ class _SignupViewState extends State<SignupView> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   'Start your journey to mastering AI skills',
                   style: TextStyle(
                     color: AppColors.textSecondary,
@@ -151,7 +151,7 @@ class _SignupViewState extends State<SignupView> {
                     padding: const EdgeInsets.only(bottom: 8),
                     child: Text(
                       _authController.errorMessage.value,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppColors.error,
                         fontSize: 13,
                       ),
@@ -170,13 +170,13 @@ class _SignupViewState extends State<SignupView> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
+                    Text(
                       'Already have an account? ',
                       style: TextStyle(color: AppColors.textSecondary),
                     ),
                     GestureDetector(
                       onTap: () => Get.back(),
-                      child: const Text(
+                      child: Text(
                         'Sign In',
                         style: TextStyle(
                           color: AppColors.primaryLight,

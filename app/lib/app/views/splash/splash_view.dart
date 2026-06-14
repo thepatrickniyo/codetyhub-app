@@ -51,7 +51,7 @@ class _SplashViewState extends State<SplashView>
     return Scaffold(
       body: Container(
         width: double.infinity,
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
@@ -71,7 +71,7 @@ class _SplashViewState extends State<SplashView>
                 width: 88,
                 height: 88,
                 decoration: BoxDecoration(
-                  gradient: const LinearGradient(
+                  gradient: LinearGradient(
                     colors: [AppColors.primary, AppColors.accent],
                   ),
                   borderRadius: BorderRadius.circular(24),
@@ -90,7 +90,7 @@ class _SplashViewState extends State<SplashView>
                 ),
               ),
               const SizedBox(height: 24),
-              const Text(
+              Text(
                 'CodetyHub',
                 style: TextStyle(
                   color: AppColors.textPrimary,
@@ -100,7 +100,7 @@ class _SplashViewState extends State<SplashView>
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
+              Text(
                 'Master AI Skills',
                 style: TextStyle(
                   color: AppColors.textSecondary,
@@ -108,7 +108,7 @@ class _SplashViewState extends State<SplashView>
                 ),
               ),
               const SizedBox(height: 48),
-              const SizedBox(
+              SizedBox(
                 width: 32,
                 height: 32,
                 child: CircularProgressIndicator(

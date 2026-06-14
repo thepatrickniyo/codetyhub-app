@@ -60,7 +60,7 @@ class PathwayDetailView extends StatelessWidget {
                         const SizedBox(height: 12),
                         Text(
                           pathway.title,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.textPrimary,
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -69,7 +69,7 @@ class PathwayDetailView extends StatelessWidget {
                         const SizedBox(height: 8),
                         Text(
                           pathway.description,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.textSecondary,
                             fontSize: 14,
                             height: 1.4,
@@ -178,7 +178,7 @@ class _StatCard extends StatelessWidget {
               children: [
                 Text(
                   value,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.textPrimary,
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
@@ -186,7 +186,7 @@ class _StatCard extends StatelessWidget {
                 ),
                 Text(
                   label,
-                  style: const TextStyle(
+                  style: TextStyle(
                     color: AppColors.textSecondary,
                     fontSize: 12,
                   ),

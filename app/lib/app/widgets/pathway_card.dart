@@ -63,7 +63,7 @@ class PathwayCard extends StatelessWidget {
               const SizedBox(height: 16),
               Text(
                 pathway.title,
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.textPrimary,
                   fontSize: 17,
                   fontWeight: FontWeight.w600,
@@ -74,7 +74,7 @@ class PathwayCard extends StatelessWidget {
                 pathway.description,
                 maxLines: 2,
                 overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
+                style: TextStyle(
                   color: AppColors.textSecondary,
                   fontSize: 13,
                   height: 1.4,

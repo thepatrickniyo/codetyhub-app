@@ -1,27 +1,36 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 class AppColors {
   AppColors._();
 
-  static const Color background = Color(0xFF06080F);      // Obsidian black
-  static const Color surface = Color(0xFF111420);         // Deep blue-grey glass surface
-  static const Color surfaceLight = Color(0xFF1B2035);    // Lighter glass surface
-  static const Color primary = Color(0xFF3B82F6);         // Royal blue
-  static const Color primaryLight = Color(0xFF60A5FA);    // Light electric blue
-  static const Color accent = Color(0xFFFFFFFF);          // White accent
-  static const Color accentGreen = Color(0xFF60A5FA);     // Blue theme mapping
-  static const Color textPrimary = Color(0xFFFFFFFF);     // Pure white text
-  static const Color textSecondary = Color(0xFF94A3B8);   // Soft silver-grey text
-  static const Color error = Color(0xFFEF4444);           // Keep standard error red
-  static const Color border = Color(0xFF1E293B);          // Subtle slate border for glass borders
+  static Color get background => Get.isDarkMode ? const Color(0xFF06080F) : const Color(0xFFF8FAFC);
+  static Color get surface => Get.isDarkMode ? const Color(0xFF111420) : const Color(0xFFFFFFFF);
+  static Color get surfaceLight => Get.isDarkMode ? const Color(0xFF1B2035) : const Color(0xFFF1F5F9);
+  static Color get primary => const Color(0xFF3B82F6);
+  static Color get primaryLight => Get.isDarkMode ? const Color(0xFF60A5FA) : const Color(0xFF2563EB);
+  static Color get accent => Get.isDarkMode ? const Color(0xFFFFFFFF) : const Color(0xFF0F172A);
+  static Color get accentGreen => const Color(0xFF3B82F6);
+  static Color get textPrimary => Get.isDarkMode ? const Color(0xFFFFFFFF) : const Color(0xFF0F172A);
+  static Color get textSecondary => Get.isDarkMode ? const Color(0xFF94A3B8) : const Color(0xFF475569);
+  static Color get error => const Color(0xFFEF4444);
+  static Color get border => Get.isDarkMode ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0);
 
-  static const List<Color> pathwayGradients = [
-    Color(0xFF2563EB), // Royal blue
-    Color(0xFF1D4ED8), // Deep cobalt blue
-    Color(0xFF60A5FA), // Ice blue
-    Color(0xFF3B82F6), // Electric blue
-    Color(0xFF93C5FD), // Sky blue
-    Color(0xFF1E3A8A), // Navy blue
-  ];
+  static List<Color> get pathwayGradients => Get.isDarkMode
+      ? const [
+          Color(0xFF2563EB),
+          Color(0xFF1D4ED8),
+          Color(0xFF60A5FA),
+          Color(0xFF3B82F6),
+          Color(0xFF93C5FD),
+          Color(0xFF1E3A8A),
+        ]
+      : const [
+          Color(0xFF3B82F6),
+          Color(0xFF1E3A8A),
+          Color(0xFF60A5FA),
+          Color(0xFF2563EB),
+          Color(0xFF93C5FD),
+          Color(0xFF1D4ED8),
+        ];
 }
-

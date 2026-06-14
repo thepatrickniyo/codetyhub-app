@@ -1,8 +1,52 @@
 import '../models/course_model.dart';
+import '../models/leaderboard_model.dart';
 import '../models/pathway_model.dart';
 
 class MockData {
   MockData._();
+
+  static const List<LeaderboardEntry> leaderboard = [
+    LeaderboardEntry(
+      rank: 1,
+      name: 'Aisha Kamara',
+      avatarInitials: 'AK',
+      points: 12480,
+      pathwaysCompleted: 5,
+      streak: 34,
+    ),
+    LeaderboardEntry(
+      rank: 2,
+      name: 'Marcus Chen',
+      avatarInitials: 'MC',
+      points: 11950,
+      pathwaysCompleted: 4,
+      streak: 28,
+    ),
+    LeaderboardEntry(
+      rank: 3,
+      name: 'Sofia Rivera',
+      avatarInitials: 'SR',
+      points: 10740,
+      pathwaysCompleted: 4,
+      streak: 21,
+    ),
+    LeaderboardEntry(
+      rank: 4,
+      name: 'James Osei',
+      avatarInitials: 'JO',
+      points: 9860,
+      pathwaysCompleted: 3,
+      streak: 15,
+    ),
+    LeaderboardEntry(
+      rank: 5,
+      name: 'Priya Nair',
+      avatarInitials: 'PN',
+      points: 8920,
+      pathwaysCompleted: 3,
+      streak: 12,
+    ),
+  ];
 
   static const List<PathwayModel> pathways = [
     PathwayModel(

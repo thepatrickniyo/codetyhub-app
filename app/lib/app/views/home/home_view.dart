@@ -3,204 +3,167 @@ import 'package:get/get.dart';
 
 import '../../controllers/auth_controller.dart';
 import '../../controllers/home_controller.dart';
-import '../../routes/app_routes.dart';
+import '../../controllers/nav_controller.dart';
 import '../../theme/app_colors.dart';
-import '../../widgets/pathway_card.dart';
+import '../../theme/theme_service.dart';
+import 'tabs/home_tab.dart';
+import 'tabs/marketplace_tab.dart';
+import 'tabs/pathways_tab.dart';
+import 'tabs/settings_tab.dart';
 
 class HomeView extends StatelessWidget {
   const HomeView({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final homeController = Get.find<HomeController>();
-    final authController = Get.find<AuthController>();
+    final navController = Get.put(NavController());
+    Get.find<HomeController>();
+    Get.find<AuthController>();
+
+    final tabs = const [
+      HomeTab(),
+      PathwaysTab(),
+      MarketplaceTab(),
+      SettingsTab(),
+    ];
 
     return Scaffold(
-      body: SafeArea(
-        child: CustomScrollView(
-          slivers: [
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 16, 24, 0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Obx(
-                                () => Text(
-                                  'Hello, ${authController.user.value?.name.split(' ').first ?? 'Learner'}',
-                                  style: const TextStyle(
-                                    color: AppColors.textPrimary,
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              const Text(
-                                'Choose a pathway to start learning',
-                                style: TextStyle(
-                                  color: AppColors.textSecondary,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        PopupMenuButton<String>(
-                          icon: Container(
-                            width: 44,
-                            height: 44,
-                            decoration: BoxDecoration(
-                              color: AppColors.surface,
-                              borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: AppColors.border),
-                            ),
-                            child: const Icon(
-                              Icons.person_outline,
-                              color: AppColors.textPrimary,
-                            ),
-                          ),
-                          color: AppColors.surface,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          onSelected: (value) async {
-                            if (value == 'logout') {
-                              await authController.logout();
-                              Get.offAllNamed(AppRoutes.login);
-                            }
-                          },
-                          itemBuilder: (context) => [
-                            PopupMenuItem(
-                              enabled: false,
-                              child: Obx(
-                                () => Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      authController.user.value?.name ?? '',
-                                      style: const TextStyle(
-                                        color: AppColors.textPrimary,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                    Text(
-                                      authController.user.value?.email ?? '',
-                                      style: const TextStyle(
-                                        color: AppColors.textSecondary,
-                                        fontSize: 12,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                            const PopupMenuDivider(),
-                            const PopupMenuItem(
-                              value: 'logout',
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.logout,
-                                    size: 18,
-                                    color: AppColors.error,
-                                  ),
-                                  SizedBox(width: 8),
-                                  Text(
-                                    'Sign Out',
-                                    style: TextStyle(color: AppColors.error),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                    Container(
-                      decoration: BoxDecoration(
-                        color: AppColors.surface,
-                        borderRadius: BorderRadius.circular(14),
-                        border: Border.all(color: AppColors.border),
-                      ),
-                      child: TextField(
-                        onChanged: homeController.updateSearch,
-                        style: const TextStyle(color: AppColors.textPrimary),
-                        decoration: const InputDecoration(
-                          hintText: 'Search pathways...',
-                          prefixIcon: Icon(
-                            Icons.search,
-                            color: AppColors.textSecondary,
-                          ),
-                          border: InputBorder.none,
-                          contentPadding: EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 14,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-                    Row(
-                      children: [
-                        const Text(
-                          'AI Pathways',
-                          style: TextStyle(
-                            color: AppColors.textPrimary,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        const Spacer(),
-                        Obx(
-                          () => Text(
-                            '${homeController.filteredPathways.length} available',
-                            style: const TextStyle(
-                              color: AppColors.textSecondary,
-                              fontSize: 13,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                  ],
+      backgroundColor: AppColors.background,
+      body: Obx(() => IndexedStack(
+            index: navController.currentIndex.value,
+            children: tabs,
+          )),
+      bottomNavigationBar: _BottomNavBar(navController: navController),
+    );
+  }
+}
+
+class _BottomNavBar extends StatelessWidget {
+  const _BottomNavBar({required this.navController});
+
+  final NavController navController;
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Get.find<ThemeService>().isDarkMode;
+
+    return Obx(() {
+      final current = navController.currentIndex.value;
+      return Container(
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          border: Border(
+            top: BorderSide(color: AppColors.border, width: 1),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.08),
+              blurRadius: 20,
+              offset: const Offset(0, -4),
+            ),
+          ],
+        ),
+        child: SafeArea(
+          top: false,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _NavItem(
+                  icon: Icons.home_outlined,
+                  activeIcon: Icons.home_rounded,
+                  label: 'Home',
+                  index: 0,
+                  current: current,
+                  onTap: navController.changePage,
                 ),
+                _NavItem(
+                  icon: Icons.route_outlined,
+                  activeIcon: Icons.route_rounded,
+                  label: 'Pathways',
+                  index: 1,
+                  current: current,
+                  onTap: navController.changePage,
+                ),
+                _NavItem(
+                  icon: Icons.storefront_outlined,
+                  activeIcon: Icons.storefront_rounded,
+                  label: 'Marketplace',
+                  index: 2,
+                  current: current,
+                  onTap: navController.changePage,
+                ),
+                _NavItem(
+                  icon: Icons.settings_outlined,
+                  activeIcon: Icons.settings_rounded,
+                  label: 'Settings',
+                  index: 3,
+                  current: current,
+                  onTap: navController.changePage,
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    });
+  }
+}
+
+class _NavItem extends StatelessWidget {
+  const _NavItem({
+    required this.icon,
+    required this.activeIcon,
+    required this.label,
+    required this.index,
+    required this.current,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final IconData activeIcon;
+  final String label;
+  final int index;
+  final int current;
+  final void Function(int) onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final isActive = index == current;
+    return GestureDetector(
+      onTap: () => onTap(index),
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isActive
+              ? AppColors.primary.withValues(alpha: 0.1)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: Icon(
+                isActive ? activeIcon : icon,
+                key: ValueKey(isActive),
+                size: 24,
+                color: isActive ? AppColors.primary : AppColors.textSecondary,
               ),
             ),
-            Obx(
-              () {
-                final pathways = homeController.filteredPathways;
-                if (pathways.isEmpty) {
-                  return const SliverFillRemaining(
-                    child: Center(
-                      child: Text(
-                        'No pathways found',
-                        style: TextStyle(color: AppColors.textSecondary),
-                      ),
-                    ),
-                  );
-                }
-                return SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
-                  sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) => Padding(
-                        padding: const EdgeInsets.only(bottom: 16),
-                        child: PathwayCard(pathway: pathways[index]),
-                      ),
-                      childCount: pathways.length,
-                    ),
-                  ),
-                );
-              },
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight:
+                    isActive ? FontWeight.w600 : FontWeight.w400,
+                color: isActive ? AppColors.primary : AppColors.textSecondary,
+              ),
             ),
           ],
         ),

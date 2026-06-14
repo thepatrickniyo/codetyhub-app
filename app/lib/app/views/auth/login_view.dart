@@ -56,7 +56,7 @@ class _LoginViewState extends State<LoginView> {
                     width: 72,
                     height: 72,
                     decoration: BoxDecoration(
-                      gradient: const LinearGradient(
+                      gradient: LinearGradient(
                         colors: [AppColors.primary, AppColors.accent],
                       ),
                       borderRadius: BorderRadius.circular(20),
@@ -69,7 +69,7 @@ class _LoginViewState extends State<LoginView> {
                   ),
                 ),
                 const SizedBox(height: 32),
-                const Text(
+                Text(
                   'Welcome back',
                   style: TextStyle(
                     color: AppColors.textPrimary,
@@ -78,7 +78,7 @@ class _LoginViewState extends State<LoginView> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                const Text(
+                Text(
                   'Sign in to continue your AI learning journey',
                   style: TextStyle(
                     color: AppColors.textSecondary,
@@ -130,7 +130,7 @@ class _LoginViewState extends State<LoginView> {
                     padding: const EdgeInsets.only(bottom: 8),
                     child: Text(
                       _authController.errorMessage.value,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: AppColors.error,
                         fontSize: 13,
                       ),
@@ -149,13 +149,13 @@ class _LoginViewState extends State<LoginView> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
+                    Text(
                       "Don't have an account? ",
                       style: TextStyle(color: AppColors.textSecondary),
                     ),
                     GestureDetector(
                       onTap: () => Get.toNamed(AppRoutes.signup),
-                      child: const Text(
+                      child: Text(
                         'Sign Up',
                         style: TextStyle(
                           color: AppColors.primaryLight,
