@@ -43,3 +43,17 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Python virtual environment and dependencies
+venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.env
+
+# Node.js
+node_modules/
+node-bridge/node_modules/
+node-bridge/dist/
+node-bridge/.env
+
