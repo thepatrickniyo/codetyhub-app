@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
+import '../controllers/course_controller.dart';
 import '../models/course_model.dart';
+import '../routes/app_routes.dart';
 import '../theme/app_colors.dart';
 
 class CourseCard extends StatelessWidget {
@@ -9,11 +12,13 @@ class CourseCard extends StatelessWidget {
     required this.course,
     required this.index,
     required this.accentColor,
+    required this.pathwayId,
   });
 
   final CourseModel course;
   final int index;
   final Color accentColor;
+  final String pathwayId;
 
   @override
   Widget build(BuildContext context) {
@@ -29,13 +34,14 @@ class CourseCard extends StatelessWidget {
         child: InkWell(
           borderRadius: BorderRadius.circular(14),
           onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Opening "${course.title}"...'),
-                behavior: SnackBarBehavior.floating,
-                backgroundColor: AppColors.surfaceLight,
+            Get.delete<CourseController>();
+            Get.put<CourseController>(
+              CourseController(
+                course: course,
+                pathwayId: pathwayId,
               ),
             );
+            Get.toNamed(AppRoutes.course);
           },
           child: Padding(
             padding: const EdgeInsets.all(16),

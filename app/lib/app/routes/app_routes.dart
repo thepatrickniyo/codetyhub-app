@@ -11,6 +11,7 @@ import '../views/home/home_view.dart';
 import '../views/pathway/pathway_detail_view.dart';
 import '../views/quiz/quiz_view.dart';
 import '../views/splash/splash_view.dart';
+import '../views/course/course_player_view.dart';
 
 class AppRoutes {
   AppRoutes._();
@@ -21,6 +22,7 @@ class AppRoutes {
   static const home = '/home';
   static const pathway = '/pathway/:id';
   static const quiz = '/quiz';
+  static const course = '/course';
 
   static String pathwayDetail(String id) => '/pathway/$id';
 
@@ -65,6 +67,14 @@ class AppRoutes {
       transition: Transition.rightToLeft,
       binding: BindingsBuilder(() {
         Get.put<QuizController>(QuizController());
+      }),
+    ),
+    GetPage(
+      name: course,
+      page: () => const CoursePlayerView(),
+      transition: Transition.rightToLeft,
+      binding: BindingsBuilder(() {
+        // CourseController is put by the caller before navigating
       }),
     ),
   ];

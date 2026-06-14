@@ -3,10 +3,13 @@ import 'package:get/get.dart';
 
 import '../../../controllers/auth_controller.dart';
 import '../../../controllers/home_controller.dart';
+import '../../../controllers/nav_controller.dart';
+import '../../../controllers/gamification_controller.dart';
 import '../../../data/mock_data.dart';
 import '../../../models/leaderboard_model.dart';
 import '../../../theme/app_colors.dart';
 import '../../../widgets/pathway_card.dart';
+import '../portfolio_view.dart';
 
 class HomeTab extends StatelessWidget {
   const HomeTab({super.key});
@@ -30,6 +33,8 @@ class HomeTab extends StatelessWidget {
                   _Header(authController: authController),
                   const SizedBox(height: 20),
                   _StatsRow(),
+                  const _LevelProgressBar(),
+                  const _DropoutNudgeBanner(),
                   const SizedBox(height: 24),
                   _SearchBar(homeController: homeController),
                   const SizedBox(height: 28),
@@ -207,30 +212,36 @@ class _StatsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        _StatCard(
-          icon: Icons.local_fire_department_rounded,
-          iconColor: const Color(0xFFFF6B35),
-          value: '7',
-          label: 'Day Streak',
-        ),
-        const SizedBox(width: 12),
-        _StatCard(
-          icon: Icons.star_rounded,
-          iconColor: const Color(0xFFFBBF24),
-          value: '2,340',
-          label: 'XP Points',
-        ),
-        const SizedBox(width: 12),
-        _StatCard(
-          icon: Icons.check_circle_rounded,
-          iconColor: const Color(0xFF22C55E),
-          value: '12',
-          label: 'Lessons Done',
-        ),
-      ],
-    );
+    final gamCtrl = Get.find<GamificationController>();
+    return Obx(() {
+      return Row(
+        children: [
+          _StatCard(
+            icon: Icons.local_fire_department_rounded,
+            iconColor: const Color(0xFFFF6B35),
+            value: gamCtrl.streak.value.toString(),
+            label: 'Day Streak',
+          ),
+          const SizedBox(width: 12),
+          _StatCard(
+            icon: Icons.star_rounded,
+            iconColor: const Color(0xFFFBBF24),
+            value: gamCtrl.xp.value.toString().replaceAllMapped(
+                  RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+                  (Match m) => '${m[1]},',
+                ),
+            label: 'XP Points',
+          ),
+          const SizedBox(width: 12),
+          _StatCard(
+            icon: Icons.check_circle_rounded,
+            iconColor: const Color(0xFF22C55E),
+            value: gamCtrl.completedLessons.length.toString(),
+            label: 'Lessons Done',
+          ),
+        ],
+      );
+    });
   }
 }
 
@@ -604,28 +615,9 @@ class _ProfileSheetContent extends StatelessWidget {
   final String name;
   final String email;
 
-  // Mock in-progress pathways: id, title, progress 0-1, courses done
-  static const _inProgress = [
-    (
-      id: 'ml-fundamentals',
-      title: 'Machine Learning Fundamentals',
-      progress: 0.42,
-      done: 2,
-      total: 4,
-      colorIndex: 0,
-    ),
-    (
-      id: 'generative-ai',
-      title: 'Generative AI',
-      progress: 0.25,
-      done: 1,
-      total: 4,
-      colorIndex: 4,
-    ),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final gamCtrl = Get.find<GamificationController>();
     final initials = name
         .split(' ')
         .take(2)
@@ -696,22 +688,52 @@ class _ProfileSheetContent extends StatelessWidget {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  name,
-                                  style: TextStyle(
-                                    color: AppColors.textPrimary,
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w700,
+                                  Text(
+                                    name,
+                                    style: TextStyle(
+                                      color: AppColors.textPrimary,
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w700,
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(height: 3),
-                                Text(
-                                  email.isNotEmpty ? email : 'No email set',
-                                  style: TextStyle(
-                                    color: AppColors.textSecondary,
-                                    fontSize: 13,
+                                  const SizedBox(height: 3),
+                                  Text(
+                                    email.isNotEmpty ? email : 'No email set',
+                                    style: TextStyle(
+                                      color: AppColors.textSecondary,
+                                      fontSize: 13,
+                                    ),
                                   ),
-                                ),
+                                  const SizedBox(height: 8),
+                                  GestureDetector(
+                                    onTap: () {
+                                      Get.back();
+                                      Get.to(() => const StudentPortfolioView());
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primary.withValues(alpha: 0.12),
+                                        borderRadius: BorderRadius.circular(8),
+                                        border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Icon(Icons.workspace_premium_rounded, size: 14, color: AppColors.primary),
+                                          const SizedBox(width: 6),
+                                          Text(
+                                            'View Portfolio',
+                                            style: TextStyle(
+                                              color: AppColors.primary,
+                                              fontSize: 12,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
                               ],
                             ),
                           ),
@@ -721,30 +743,32 @@ class _ProfileSheetContent extends StatelessWidget {
                       const SizedBox(height: 20),
 
                       // ── Quick stats ─────────────────────────────────────
-                      Row(
+                      Obx(() => Row(
                         children: [
                           _QuickStat(
                             icon: Icons.local_fire_department_rounded,
                             iconColor: const Color(0xFFFF6B35),
-                            value: '7',
+                            value: gamCtrl.streak.value.toString(),
                             label: 'Streak',
                           ),
                           const SizedBox(width: 10),
                           _QuickStat(
                             icon: Icons.star_rounded,
                             iconColor: const Color(0xFFFBBF24),
-                            value: '2.3k',
+                            value: gamCtrl.xp.value >= 1000
+                                ? '${(gamCtrl.xp.value / 1000).toStringAsFixed(1)}k'
+                                : gamCtrl.xp.value.toString(),
                             label: 'XP',
                           ),
                           const SizedBox(width: 10),
                           _QuickStat(
                             icon: Icons.military_tech_rounded,
                             iconColor: AppColors.primary,
-                            value: '#12',
+                            value: gamCtrl.rankDisplay,
                             label: 'Rank',
                           ),
                         ],
-                      ),
+                      )),
 
                       const SizedBox(height: 28),
                       Divider(color: AppColors.border),
@@ -782,46 +806,81 @@ class _ProfileSheetContent extends StatelessWidget {
                       ),
                       const SizedBox(height: 14),
 
-                      ..._inProgress.map((p) {
-                        final color = AppColors.pathwayGradients[
-                            p.colorIndex % AppColors.pathwayGradients.length];
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: _PathwayProgressCard(
-                            id: p.id,
-                            title: p.title,
-                            progress: p.progress,
-                            coursesDone: p.done,
-                            coursesTotal: p.total,
-                            color: color,
-                          ),
+                      Obx(() {
+                        final mlCourses = ['ml-1', 'ml-2', 'ml-3', 'ml-4'];
+                        final mlDone = mlCourses.where((c) => gamCtrl.completedCourses.contains(c)).length;
+                        final mlLessons = gamCtrl.completedLessons.where((k) => k.startsWith('ml-')).length;
+                        final mlProgress = mlDone > 0 ? (mlDone / 4.0) : (mlLessons > 0 ? 0.12 : 0.0);
+                        
+                        final genCourses = ['gen-1', 'gen-2', 'gen-3', 'gen-4'];
+                        final genDone = genCourses.where((c) => gamCtrl.completedCourses.contains(c)).length;
+                        final genLessons = gamCtrl.completedLessons.where((k) => k.startsWith('gen-')).length;
+                        final genProgress = genDone > 0 ? (genDone / 4.0) : (genLessons > 0 ? 0.12 : 0.0);
+
+                        final dynamicInProgress = [
+                          // Always show at least ML Fundamentals if nothing is started to make it look populated
+                          if (mlLessons > 0 || mlDone > 0 || (genLessons == 0 && genDone == 0))
+                            (
+                              id: 'ml-fundamentals',
+                              title: 'Machine Learning Fundamentals',
+                              progress: mlProgress == 0.0 ? 0.25 : mlProgress,
+                              done: mlDone == 0 ? 1 : mlDone,
+                              total: 4,
+                              colorIndex: 0,
+                            ),
+                          if (genLessons > 0 || genDone > 0)
+                            (
+                              id: 'generative-ai',
+                              title: 'Generative AI',
+                              progress: genProgress,
+                              done: genDone,
+                              total: 4,
+                              colorIndex: 4,
+                            ),
+                        ];
+
+                        if (dynamicInProgress.isEmpty) {
+                          return Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(24),
+                            decoration: BoxDecoration(
+                              color: AppColors.surfaceLight,
+                              borderRadius: BorderRadius.circular(14),
+                              border: Border.all(color: AppColors.border),
+                            ),
+                            child: Column(
+                              children: [
+                                Icon(Icons.school_outlined,
+                                    size: 36, color: AppColors.textSecondary),
+                                const SizedBox(height: 10),
+                                Text(
+                                  'No pathways started yet',
+                                  style: TextStyle(
+                                      color: AppColors.textSecondary, fontSize: 14),
+                                ),
+                              ],
+                            ),
+                          );
+                        }
+
+                        return Column(
+                          children: dynamicInProgress.map((p) {
+                            final color = AppColors.pathwayGradients[
+                                p.colorIndex % AppColors.pathwayGradients.length];
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: _PathwayProgressCard(
+                                id: p.id,
+                                title: p.title,
+                                progress: p.progress,
+                                coursesDone: p.done,
+                                coursesTotal: p.total,
+                                color: color,
+                              ),
+                            );
+                          }).toList(),
                         );
                       }),
-
-                      const SizedBox(height: 8),
-                      // Empty state if nothing in progress
-                      if (_inProgress.isEmpty)
-                        Container(
-                          width: double.infinity,
-                          padding: const EdgeInsets.all(24),
-                          decoration: BoxDecoration(
-                            color: AppColors.surfaceLight,
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(color: AppColors.border),
-                          ),
-                          child: Column(
-                            children: [
-                              Icon(Icons.school_outlined,
-                                  size: 36, color: AppColors.textSecondary),
-                              const SizedBox(height: 10),
-                              Text(
-                                'No pathways started yet',
-                                style: TextStyle(
-                                    color: AppColors.textSecondary, fontSize: 14),
-                              ),
-                            ],
-                          ),
-                        ),
                     ],
                   ),
                 ),
@@ -969,3 +1028,134 @@ class _PathwayProgressCard extends StatelessWidget {
     );
   }
 }
+
+class _LevelProgressBar extends StatelessWidget {
+  const _LevelProgressBar();
+
+  @override
+  Widget build(BuildContext context) {
+    final gamCtrl = Get.find<GamificationController>();
+    return Obx(() {
+      final lvl = gamCtrl.level;
+      final prog = gamCtrl.levelProgress;
+      final xpLeft = (lvl * 500) - gamCtrl.xp.value;
+      return Container(
+        margin: const EdgeInsets.only(top: 14),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.border),
+        ),
+        child: Column(
+          children: [
+            Row(
+              children: [
+                Text(
+                  'Level $lvl',
+                  style: TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                const Spacer(),
+                Text(
+                  '$xpLeft XP to next level',
+                  style: TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            ClipRRect(
+              borderRadius: BorderRadius.circular(3),
+              child: LinearProgressIndicator(
+                value: prog,
+                minHeight: 6,
+                backgroundColor: AppColors.surfaceLight,
+                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+              ),
+            ),
+          ],
+        ),
+      );
+    });
+  }
+}
+
+class _DropoutNudgeBanner extends StatelessWidget {
+  const _DropoutNudgeBanner();
+
+  @override
+  Widget build(BuildContext context) {
+    final navCtrl = Get.find<NavController>();
+    return Container(
+      margin: const EdgeInsets.only(top: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.primary,
+            AppColors.primaryLight,
+          ],
+        ),
+        borderRadius: BorderRadius.circular(14),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.rocket_launch_rounded, color: Colors.white, size: 22),
+              const SizedBox(width: 8),
+              Text(
+                'Streak At Risk!',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Keep your streak alive! Complete a lesson today to stay on track.',
+            style: TextStyle(
+              color: Colors.white.withValues(alpha: 0.9),
+              fontSize: 13,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 12),
+          GestureDetector(
+            onTap: () {
+              navCtrl.changePage(1); // Navigates to pathways tab
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Text(
+                'Continue Learning',
+                style: TextStyle(
+                  color: AppColors.primary,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+

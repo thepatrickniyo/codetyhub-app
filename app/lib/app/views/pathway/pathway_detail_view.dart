@@ -190,6 +190,7 @@ class PathwayDetailView extends StatelessWidget {
                     course: course,
                     index: index,
                     accentColor: accentColor,
+                    pathwayId: pathway.id,
                   );
                 },
                 childCount: pathway.courses.length,

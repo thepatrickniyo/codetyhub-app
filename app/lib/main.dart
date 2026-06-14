@@ -6,6 +6,7 @@ import 'app/data/auth_service.dart';
 import 'app/routes/app_routes.dart';
 import 'app/theme/app_theme.dart';
 import 'app/theme/theme_service.dart';
+import 'app/controllers/gamification_controller.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,6 +18,9 @@ Future<void> main() async {
 
   final themeService = ThemeService(storage);
   Get.put<ThemeService>(themeService, permanent: true);
+
+  final gamification = GamificationController();
+  Get.put<GamificationController>(gamification, permanent: true);
 
   runApp(const CodetyHubApp());
 }
