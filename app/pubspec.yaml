@@ -38,6 +38,7 @@ dependencies:
   google_fonts: ^6.3.2
   flutter_svg: ^2.2.2
   get_storage: ^2.1.1
+  http: ^1.2.0          # HTTP client for Node bridge ML API calls
 
 dev_dependencies:
   flutter_test:

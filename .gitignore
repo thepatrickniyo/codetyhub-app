@@ -57,3 +57,6 @@ node-bridge/node_modules/
 node-bridge/dist/
 node-bridge/.env
 
+# ML Microservice
+ML/.env
+

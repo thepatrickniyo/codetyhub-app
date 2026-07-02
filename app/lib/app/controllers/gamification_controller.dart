@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get_storage/get_storage.dart';
 
+import '../data/app_config.dart';
+import '../data/ml_service.dart';
 import '../models/badge_model.dart';
+import '../models/ml_models.dart';
 
 class GamificationController extends GetxController {
   // ── Observable state ──────────────────────────────────────────────────────
@@ -17,6 +21,30 @@ class GamificationController extends GetxController {
   // ── XP toast signal ───────────────────────────────────────────────────────
   final RxInt lastXpAward = 0.obs;
   final RxBool showXpToast = false.obs;
+
+  // ── ML Dropout Risk ───────────────────────────────────────────────────────
+  final Rx<GamificationRiskResponse?> latestRisk = Rx<GamificationRiskResponse?>(null);
+  final RxBool isFetchingRisk = false.obs;
+
+  /// Latest ML-driven interventions (populated when risk is HIGH/MEDIUM).
+  List<MlIntervention> get mlInterventions => latestRisk.value?.interventions ?? [];
+  String get riskBand => latestRisk.value?.riskBand ?? 'LOW';
+  double get riskScore => latestRisk.value?.riskScore ?? 0.0;
+
+  // ── ML Service ────────────────────────────────────────────────────────────
+  late final MlService _ml;
+
+  @override
+  void onInit() {
+    super.onInit();
+    final storage = Get.find<GetStorage>();
+    final user = storage.read<Map<dynamic, dynamic>>('current_user');
+    final userId = user?['id']?.toString() ?? 'anonymous';
+    _ml = MlService(
+      baseUrl: bridgeUrl,
+      bearerToken: devBearerToken(userId),
+    );
+  }
 
   // ── Computed ──────────────────────────────────────────────────────────────
   int get level => (xp.value ~/ 500) + 1;
@@ -95,6 +123,9 @@ class GamificationController extends GetxController {
     // Check lesson-count badges
     if (completedLessons.length == 1) _unlockBadge('first_lesson');
     if (completedLessons.length == 5) _unlockBadge('five_lessons');
+
+    // Run ML dropout risk assessment asynchronously
+    _runDropoutRiskAssessment();
   }
 
   /// Call when all lessons in a course are done.
@@ -103,6 +134,66 @@ class GamificationController extends GetxController {
     completedCourses.add(courseId);
     _awardXp(200);
     if (completedCourses.length == 1) _unlockBadge('first_course');
+
+    // Re-run risk assessment after course completion
+    _runDropoutRiskAssessment();
+  }
+
+  /// Fetch dropout risk from the ML service and update [latestRisk].
+  /// Fires-and-forgets — never blocks the UI.
+  Future<void> _runDropoutRiskAssessment() async {
+    if (isFetchingRisk.value) return; // Debounce
+    isFetchingRisk.value = true;
+
+    try {
+      final storage = Get.find<GetStorage>();
+      final user = storage.read<Map<dynamic, dynamic>>('current_user');
+      final studentId = user?['id']?.toString() ?? 'anonymous';
+
+      // Build engagement metrics from current observable state
+      final engagement = {
+        'current_streak': streak.value.toDouble(),
+        'streak_delta_7d': 0.0,
+        'total_xp': xp.value.toDouble(),
+        'xp_trend_slope': 0.0,
+        'leaderboard_checks_30d': 0.0,
+        'challenge_refusals_30d': 0.0,
+        'sessions_per_week': 3.5,
+        'avg_session_minutes': 25.0,
+      };
+
+      // Build a minimal IKP from completed lesson keys
+      // (lesson completion implies baseline proficiency for those modules)
+      final ikp = <String, double>{};
+      for (final key in completedLessons) {
+        final parts = key.split(':');
+        if (parts.isNotEmpty) {
+          ikp[parts[0]] = 0.7; // Baseline mastery score for completed modules
+        }
+      }
+      if (ikp.isEmpty) ikp['python_basics'] = 0.5; // Always send at least one skill
+
+      final result = await _ml.predictDropoutRisk(
+        studentId: studentId,
+        ikpScores: ikp,
+        engagement: engagement,
+      );
+
+      if (result != null) {
+        latestRisk.value = result;
+        print('[GamificationController] Risk: ${result.riskBand} (${result.riskScore.toStringAsFixed(2)})');
+
+        // Log ML-driven interventions if high risk
+        if (result.isHighRisk) {
+          print('[GamificationController] HIGH RISK — interventions: '
+              '${result.interventions.map((i) => i.type).join(', ')}');
+        }
+      }
+    } catch (e) {
+      print('[GamificationController] Risk assessment error: $e');
+    } finally {
+      isFetchingRisk.value = false;
+    }
   }
 
   void _awardXp(int amount) {
