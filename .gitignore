@@ -11,17 +11,13 @@
 .svn/
 .swiftpm/
 migrate_working_dir/
+*.docx
 
 # IntelliJ related
 *.iml
 *.ipr
 *.iws
 .idea/
-
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
-#.vscode/
 
 # Flutter/Dart/Pub related
 **/doc/api/
@@ -31,7 +27,9 @@ migrate_working_dir/
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
-/build/
+build/
+app/build/
+app/coverage/
 
 # Symbolication related
 app.*.symbols
@@ -46,10 +44,15 @@ app.*.map.json
 
 # Python virtual environment and dependencies
 venv/
+.venv/
 __pycache__/
 *.pyc
 .pytest_cache/
-.env
+.coverage
+coverage_html/
+ML/.coverage
+ML/coverage_html/
+ML/.env
 
 # Node.js
 node_modules/
@@ -59,4 +62,3 @@ node-bridge/.env
 
 # ML Microservice
 ML/.env
-
