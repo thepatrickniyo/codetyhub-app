@@ -54,7 +54,7 @@ HIGH_RISK_MIN = 0.65
 try:
     import xgboost as xgb
     _XGB_AVAILABLE = True
-except ImportError:
+except (ImportError, Exception):
     _XGB_AVAILABLE = False
 
 
