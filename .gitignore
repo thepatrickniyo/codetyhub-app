@@ -12,6 +12,8 @@
 .swiftpm/
 migrate_working_dir/
 *.docx
+*.gs
+*.bak
 
 # IntelliJ related
 *.iml
@@ -62,3 +64,4 @@ node-bridge/.env
 
 # ML Microservice
 ML/.env
+.tools
