@@ -3,7 +3,7 @@ const assert = require('node:assert');
 const { requireAuth, optionalAuth } = require('../middleware/auth');
 
 describe('JWT Auth Middleware Tests', () => {
-  test('requireAuth should reject missing Authorization header with 401', () => {
+  test('requireAuth rejects missing Authorization header with 401', () => {
     const req = { headers: {} };
     let statusSent = null;
     let jsonSent = null;
@@ -18,41 +18,60 @@ describe('JWT Auth Middleware Tests', () => {
       }
     };
     let nextCalled = false;
-    const next = () => { nextCalled = true; };
-
-    requireAuth(req, res, next);
+    requireAuth(req, res, () => { nextCalled = true; });
 
     assert.strictEqual(statusSent, 401);
     assert.strictEqual(jsonSent.error, 'Unauthorised');
     assert.strictEqual(nextCalled, false);
   });
 
-  test('requireAuth should accept valid Bearer token and attach user to req', () => {
-    const req = { headers: { authorization: 'Bearer test-valid-jwt-token-12345' } };
-    const res = {};
+  test('requireAuth rejects short/invalid token with 401', () => {
+    const req = { headers: { authorization: 'Bearer short' } };
+    let statusSent = null;
+    let jsonSent = null;
+    const res = {
+      status(code) {
+        statusSent = code;
+        return this;
+      },
+      json(body) {
+        jsonSent = body;
+        return this;
+      }
+    };
     let nextCalled = false;
-    const next = () => { nextCalled = true; };
+    requireAuth(req, res, () => { nextCalled = true; });
 
-    requireAuth(req, res, next);
+    assert.strictEqual(statusSent, 401);
+    assert.strictEqual(jsonSent.message, 'Invalid or expired token.');
+    assert.strictEqual(nextCalled, false);
+  });
+
+  test('requireAuth accepts valid Bearer token and attaches user to req', () => {
+    const req = { headers: { authorization: 'Bearer valid-long-jwt-token-12345' } };
+    let nextCalled = false;
+    requireAuth(req, {}, () => { nextCalled = true; });
 
     assert.strictEqual(nextCalled, true);
     assert.ok(req.user);
     assert.strictEqual(req.user.role, 'student');
   });
 
-  test('optionalAuth should attach user if Bearer token present but continue anyway', () => {
-    const reqWithToken = { headers: { authorization: 'Bearer test-valid-jwt-token-12345' } };
+  test('optionalAuth attaches user if valid token present', () => {
+    const req = { headers: { authorization: 'Bearer valid-long-jwt-token-12345' } };
     let nextCalled = false;
-    optionalAuth(reqWithToken, {}, () => { nextCalled = true; });
+    optionalAuth(req, {}, () => { nextCalled = true; });
 
     assert.strictEqual(nextCalled, true);
-    assert.ok(reqWithToken.user);
+    assert.ok(req.user);
+  });
 
-    const reqWithoutToken = { headers: {} };
-    nextCalled = false;
-    optionalAuth(reqWithoutToken, {}, () => { nextCalled = true; });
+  test('optionalAuth continues without user if no token present', () => {
+    const req = { headers: {} };
+    let nextCalled = false;
+    optionalAuth(req, {}, () => { nextCalled = true; });
 
     assert.strictEqual(nextCalled, true);
-    assert.strictEqual(reqWithoutToken.user, undefined);
+    assert.strictEqual(req.user, undefined);
   });
 });
