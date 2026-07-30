@@ -137,25 +137,40 @@ class StudentPortfolioView extends StatelessWidget {
             // ── Stats Summary ──────────────────────────────────────────────────────────
             Obx(() => Row(
                   children: [
-                    _PortfolioStat(
-                      icon: Icons.local_fire_department_rounded,
-                      iconColor: const Color(0xFFFF6B35),
-                      value: gamCtrl.streak.value.toString(),
-                      label: 'Streak Day',
+                    Expanded(
+                      child: _PortfolioStat(
+                        icon: Icons.local_fire_department_rounded,
+                        iconColor: const Color(0xFFFF6B35),
+                        value: gamCtrl.streak.value.toString(),
+                        label: 'Streak Day',
+                      ),
                     ),
-                    const SizedBox(width: 10),
-                    _PortfolioStat(
-                      icon: Icons.star_rounded,
-                      iconColor: const Color(0xFFFBBF24),
-                      value: gamCtrl.xp.value.toString(),
-                      label: 'Total XP',
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _PortfolioStat(
+                        icon: Icons.star_rounded,
+                        iconColor: const Color(0xFFFBBF24),
+                        value: gamCtrl.xp.value.toString(),
+                        label: 'Total XP',
+                      ),
                     ),
-                    const SizedBox(width: 10),
-                    _PortfolioStat(
-                      icon: Icons.workspace_premium_rounded,
-                      iconColor: AppColors.primary,
-                      value: 'Level ${gamCtrl.level}',
-                      label: 'Current Level',
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _PortfolioStat(
+                        icon: Icons.psychology_rounded,
+                        iconColor: const Color(0xFF3B82F6),
+                        value: gamCtrl.vssScore.value.toStringAsFixed(1),
+                        label: 'VSS Rating',
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: _PortfolioStat(
+                        icon: Icons.workspace_premium_rounded,
+                        iconColor: AppColors.primary,
+                        value: 'Lvl ${gamCtrl.level}',
+                        label: 'Level',
+                      ),
                     ),
                   ],
                 )),

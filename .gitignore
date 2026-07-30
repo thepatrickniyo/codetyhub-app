@@ -62,6 +62,13 @@ node-bridge/node_modules/
 node-bridge/dist/
 node-bridge/.env
 
-# ML Microservice
+# ML Microservice & Model Weights (>100MB)
 ML/.env
 .tools
+*.pt
+*.bin
+*.safetensors
+*.h5
+*.ckpt
+**/model_weights.pt
+postgres_data/

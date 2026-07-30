@@ -192,6 +192,59 @@ class MlService {
     return _get('/api/code-review/rubric');
   }
 
+  // ── Authentication & Progress Persistence ──────────────────────────────────
+
+  /// Register a new student account in PostgreSQL.
+  Future<Map<String, dynamic>?> registerUser({
+    required String name,
+    required String email,
+    required String password,
+  }) async {
+    return _post('/api/auth/register', {
+      'name': name,
+      'email': email,
+      'password': password,
+    });
+  }
+
+  /// Login existing student against PostgreSQL & fetch progress.
+  Future<Map<String, dynamic>?> loginUser({
+    required String email,
+    required String password,
+  }) async {
+    return _post('/api/auth/login', {
+      'email': email,
+      'password': password,
+    });
+  }
+
+  /// Retrieve student's persisted progress from PostgreSQL.
+  Future<Map<String, dynamic>?> fetchUserProgress(String userId) async {
+    return _get('/api/auth/progress/$userId');
+  }
+
+  /// Persist student's XP, streak, and completed lessons to PostgreSQL.
+  Future<bool> syncUserProgress({
+    required String userId,
+    required int xp,
+    required int streak,
+    required List<String> completedLessons,
+    List<String> completedQuizzes = const [],
+    Map<String, double> ikpScores = const {},
+    List<String> badges = const [],
+  }) async {
+    final result = await _post('/api/auth/progress/sync', {
+      'user_id': userId,
+      'xp': xp,
+      'streak': streak,
+      'completed_lessons': completedLessons,
+      'completed_quizzes': completedQuizzes,
+      'ikp_scores': ikpScores,
+      'badges': badges,
+    });
+    return result?['success'] == true;
+  }
+
   // ── Health check ──────────────────────────────────────────────────────────
 
   /// Returns true if the Node bridge (and by extension the ML service) is reachable.

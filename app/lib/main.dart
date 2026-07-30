@@ -13,6 +13,8 @@ Future<void> main() async {
   await GetStorage.init();
 
   final storage = GetStorage();
+  Get.put<GetStorage>(storage, permanent: true);
+
   final authService = AuthService(storage);
   Get.put<AuthService>(authService, permanent: true);
 
