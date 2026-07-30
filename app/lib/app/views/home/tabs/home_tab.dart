@@ -10,6 +10,7 @@ import '../../../models/leaderboard_model.dart';
 import '../../../theme/app_colors.dart';
 import '../../../widgets/pathway_card.dart';
 import '../portfolio_view.dart';
+import '../../submission_dialog.dart';
 
 class HomeTab extends StatelessWidget {
   const HomeTab({super.key});
@@ -138,6 +139,15 @@ class _Header extends StatelessWidget {
             );
           }),
         ),
+        // Submit Gist Code button
+        _IconBtn(
+          icon: Icons.code_rounded,
+          onTap: () {
+            final userId = authController.user.value?.id ?? 'usr-seed-004';
+            showGistSubmissionDialog(context, studentId: userId);
+          },
+        ),
+        const SizedBox(width: 10),
         // Notification bell
         _IconBtn(icon: Icons.notifications_outlined, onTap: () {}),
         const SizedBox(width: 10),
@@ -216,28 +226,34 @@ class _StatsRow extends StatelessWidget {
     return Obx(() {
       return Row(
         children: [
-          _StatCard(
-            icon: Icons.local_fire_department_rounded,
-            iconColor: const Color(0xFFFF6B35),
-            value: gamCtrl.streak.value.toString(),
-            label: 'Day Streak',
+          Expanded(
+            child: _StatCard(
+              icon: Icons.local_fire_department_rounded,
+              iconColor: const Color(0xFFFF6B35),
+              value: gamCtrl.streak.value.toString(),
+              label: 'Streak',
+            ),
           ),
-          const SizedBox(width: 12),
-          _StatCard(
-            icon: Icons.star_rounded,
-            iconColor: const Color(0xFFFBBF24),
-            value: gamCtrl.xp.value.toString().replaceAllMapped(
-                  RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
-                  (Match m) => '${m[1]},',
-                ),
-            label: 'XP Points',
+          const SizedBox(width: 8),
+          Expanded(
+            child: _StatCard(
+              icon: Icons.star_rounded,
+              iconColor: const Color(0xFFFBBF24),
+              value: gamCtrl.xp.value.toString().replaceAllMapped(
+                    RegExp(r'(\d{1,3})(?=(\d{3})+(?!\d))'),
+                    (Match m) => '${m[1]},',
+                  ),
+              label: 'XP Points',
+            ),
           ),
-          const SizedBox(width: 12),
-          _StatCard(
-            icon: Icons.check_circle_rounded,
-            iconColor: const Color(0xFF22C55E),
-            value: gamCtrl.completedLessons.length.toString(),
-            label: 'Lessons Done',
+          const SizedBox(width: 8),
+          Expanded(
+            child: _StatCard(
+              icon: Icons.psychology_rounded,
+              iconColor: const Color(0xFF3B82F6),
+              value: gamCtrl.vssScore.value.toStringAsFixed(1),
+              label: 'VSS Rating',
+            ),
           ),
         ],
       );
@@ -745,27 +761,42 @@ class _ProfileSheetContent extends StatelessWidget {
                       // ── Quick stats ─────────────────────────────────────
                       Obx(() => Row(
                         children: [
-                          _QuickStat(
-                            icon: Icons.local_fire_department_rounded,
-                            iconColor: const Color(0xFFFF6B35),
-                            value: gamCtrl.streak.value.toString(),
-                            label: 'Streak',
+                          Expanded(
+                            child: _QuickStat(
+                              icon: Icons.local_fire_department_rounded,
+                              iconColor: const Color(0xFFFF6B35),
+                              value: gamCtrl.streak.value.toString(),
+                              label: 'Streak',
+                            ),
                           ),
-                          const SizedBox(width: 10),
-                          _QuickStat(
-                            icon: Icons.star_rounded,
-                            iconColor: const Color(0xFFFBBF24),
-                            value: gamCtrl.xp.value >= 1000
-                                ? '${(gamCtrl.xp.value / 1000).toStringAsFixed(1)}k'
-                                : gamCtrl.xp.value.toString(),
-                            label: 'XP',
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _QuickStat(
+                              icon: Icons.star_rounded,
+                              iconColor: const Color(0xFFFBBF24),
+                              value: gamCtrl.xp.value >= 1000
+                                  ? '${(gamCtrl.xp.value / 1000).toStringAsFixed(1)}k'
+                                  : gamCtrl.xp.value.toString(),
+                              label: 'XP',
+                            ),
                           ),
-                          const SizedBox(width: 10),
-                          _QuickStat(
-                            icon: Icons.military_tech_rounded,
-                            iconColor: AppColors.primary,
-                            value: gamCtrl.rankDisplay,
-                            label: 'Rank',
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _QuickStat(
+                              icon: Icons.psychology_rounded,
+                              iconColor: const Color(0xFF3B82F6),
+                              value: gamCtrl.vssScore.value.toStringAsFixed(1),
+                              label: 'VSS',
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: _QuickStat(
+                              icon: Icons.military_tech_rounded,
+                              iconColor: AppColors.primary,
+                              value: gamCtrl.rankDisplay,
+                              label: 'Rank',
+                            ),
                           ),
                         ],
                       )),

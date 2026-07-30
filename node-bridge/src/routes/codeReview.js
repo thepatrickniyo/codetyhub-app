@@ -13,6 +13,7 @@
 
 const express = require('express');
 const { body, query, validationResult } = require('express-validator');
+const db = require('../db');
 const mlClient = require('../services/mlClient');
 const { requireAuth, optionalAuth } = require('../middleware/auth');
 
@@ -27,18 +28,6 @@ function handleValidation(req, res) {
 }
 
 // ── POST /api/code-review/evaluate ────────────────────────────────────────────
-/**
- * @description
- * Submit a code repository for CodeBERT evaluation.
- *
- * The backend:
- *   1. Preprocesses and truncates the code.
- *   2. Calls the HuggingFace CodeBERT Inference API (or heuristic fallback).
- *   3. Computes a weighted Verified Skill Score (VSS) in [0–100].
- *   4. Updates the Redis Sorted Set (ZADD) — instantly reshuffling leaderboard.
- *
- * Returns VSS, per-dimension scores, actionable feedback, and new rank.
- */
 router.post(
   '/evaluate',
   requireAuth,
@@ -53,6 +42,27 @@ router.post(
 
     try {
       const { data } = await mlClient.post('/code-review/evaluate', req.body);
+
+      // Persist updated VSS score and submission history into PostgreSQL
+      if (req.body.student_id && data.vss != null) {
+        db.query(
+          `UPDATE user_progress SET vss_score = $1, updated_at = CURRENT_TIMESTAMP WHERE user_id = $2`,
+          [data.vss, req.body.student_id]
+        ).catch(e => console.warn('[codeReview] VSS DB update warning:', e.message));
+
+        db.query(
+          `INSERT INTO code_submissions (user_id, skill_node, code_text, vss_score, dimension_scores, feedback)
+           VALUES ($1, $2, $3, $4, $5, $6)`,
+          [
+            req.body.student_id,
+            req.body.skill_node,
+            req.body.code_text,
+            data.vss,
+            JSON.stringify(data.dimension_scores || {}),
+            JSON.stringify(data.feedback || {}),
+          ]
+        ).catch(e => console.warn('[codeReview] Submission history DB insert warning:', e.message));
+      }
 
       console.info(
         `[code-review] Evaluated ${req.body.student_id} on "${req.body.skill_node}" ` +
@@ -71,11 +81,6 @@ router.post(
 );
 
 // ── GET /api/code-review/leaderboard ──────────────────────────────────────────
-/**
- * @description
- * Returns the employer-visible talent leaderboard sorted by VSS (desc).
- * Public route — no auth required (optional token for personalised rank context).
- */
 router.get(
   '/leaderboard',
   optionalAuth,
@@ -83,16 +88,39 @@ router.get(
   async (req, res) => {
     const limit = parseInt(req.query.limit || '20', 10);
     try {
-      const { data } = await mlClient.get('/code-review/leaderboard', {
-        params: { limit },
-      });
+      const result = await db.query(
+        `SELECT u.id as student_id, u.name, u.email, up.xp, up.streak, COALESCE(up.vss_score, 0.0) as vss
+         FROM users u
+         JOIN user_progress up ON u.id = up.user_id
+         ORDER BY up.vss_score DESC, up.xp DESC
+         LIMIT $1`,
+        [limit]
+      );
+
+      const leaderboard = result.rows.map((row, idx) => ({
+        rank: idx + 1,
+        student_id: row.student_id,
+        name: row.name,
+        email: row.email,
+        xp: row.xp,
+        streak: row.streak,
+        vss: parseFloat(row.vss).toFixed(1),
+      }));
+
       return res.json({
         success: true,
         viewer: req.user?.studentId || null,
-        data,
+        total_students_ranked: leaderboard.length,
+        data: leaderboard,
       });
     } catch (err) {
-      return res.status(err.status || 502).json({ success: false, error: err.message });
+      console.warn('[codeReview] DB leaderboard fallback:', err.message);
+      try {
+        const { data } = await mlClient.get('/code-review/leaderboard', { params: { limit } });
+        return res.json({ success: true, viewer: req.user?.studentId || null, data });
+      } catch (mlErr) {
+        return res.status(502).json({ success: false, error: mlErr.message });
+      }
     }
   },
 );

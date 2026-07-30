@@ -11,6 +11,7 @@ class GamificationController extends GetxController {
   // ── Observable state ──────────────────────────────────────────────────────
   final RxInt xp = 2340.obs; // Seed with some XP
   final RxInt streak = 7.obs;
+  final RxDouble vssScore = 78.5.obs; // Real-time Verified Skill Score (VSS)
   final RxSet<String> completedLessons = <String>{}.obs;
   final RxSet<String> completedCourses = <String>{}.obs;
   final RxList<BadgeModel> unlockedBadges = <BadgeModel>[].obs;
@@ -43,6 +44,62 @@ class GamificationController extends GetxController {
     _ml = MlService(
       baseUrl: bridgeUrl,
       bearerToken: devBearerToken(userId),
+    );
+
+    _loadPersistedProgress(storage, userId);
+  }
+
+  void _loadPersistedProgress(GetStorage storage, String userId) {
+    final cached = storage.read<Map<dynamic, dynamic>>('user_progress_cache');
+    if (cached != null) {
+      if (cached['xp'] != null) xp.value = (cached['xp'] as num).toInt();
+      if (cached['streak'] != null) streak.value = (cached['streak'] as num).toInt();
+      if (cached['vss_score'] != null) vssScore.value = (cached['vss_score'] as num).toDouble();
+      if (cached['completed_lessons'] != null) {
+        final lessons = (cached['completed_lessons'] as List).cast<String>();
+        completedLessons.addAll(lessons);
+      }
+      if (cached['badges'] != null) {
+        final badgeIds = (cached['badges'] as List).cast<String>();
+        for (final bId in badgeIds) {
+          final badge = _allBadges.firstWhereOrNull((b) => b.id == bId);
+          if (badge != null && !unlockedBadges.any((u) => u.id == bId)) {
+            unlockedBadges.add(badge);
+          }
+        }
+      }
+    }
+
+    // Also fetch fresh from PostgreSQL asynchronously
+    if (userId != 'anonymous') {
+      _ml.fetchUserProgress(userId).then((res) {
+        if (res != null && res['success'] == true && res['progress'] != null) {
+          final prog = Map<String, dynamic>.from(res['progress'] as Map);
+          if (prog['xp'] != null) xp.value = (prog['xp'] as num).toInt();
+          if (prog['streak'] != null) streak.value = (prog['streak'] as num).toInt();
+          if (prog['vss_score'] != null) vssScore.value = (prog['vss_score'] as num).toDouble();
+          if (prog['completed_lessons'] != null) {
+            final lessons = (prog['completed_lessons'] as List).map((e) => e.toString()).toList();
+            completedLessons.addAll(lessons);
+          }
+          storage.write('user_progress_cache', prog);
+        }
+      }).catchError((_) {});
+    }
+  }
+
+  void _syncProgressToDb() {
+    final storage = Get.find<GetStorage>();
+    final user = storage.read<Map<dynamic, dynamic>>('current_user');
+    final userId = user?['id']?.toString();
+    if (userId == null || userId == 'anonymous') return;
+
+    _ml.syncUserProgress(
+      userId: userId,
+      xp: xp.value,
+      streak: streak.value,
+      completedLessons: completedLessons.toList(),
+      badges: unlockedBadges.map((b) => b.id).toList(),
     );
   }
 
@@ -126,6 +183,7 @@ class GamificationController extends GetxController {
 
     // Run ML dropout risk assessment asynchronously
     _runDropoutRiskAssessment();
+    _syncProgressToDb();
   }
 
   /// Call when all lessons in a course are done.
@@ -137,6 +195,37 @@ class GamificationController extends GetxController {
 
     // Re-run risk assessment after course completion
     _runDropoutRiskAssessment();
+  }
+
+  /// Record a CodeBERT evaluation result, update real-time VSS score, award XP, and sync to PostgreSQL
+  void recordCodeReviewEvaluation({
+    required double newVssScore,
+    required String skillNode,
+    int? leaderboardRank,
+  }) {
+    vssScore.value = newVssScore;
+
+    // Calculate XP earned: 100 base + bonus based on VSS score
+    final bonusXp = ((newVssScore / 10.0) * 15).round();
+    final totalXpGained = 100 + bonusXp;
+
+    _awardXp(totalXpGained);
+
+    // Show floating GetX notification
+    Get.snackbar(
+      '🎉 Code Review Complete!',
+      '+$totalXpGained XP Earned! VSS: ${newVssScore.toStringAsFixed(1)} / 100' +
+          (leaderboardRank != null ? ' (Rank #$leaderboardRank)' : ''),
+      snackPosition: SnackPosition.TOP,
+      backgroundColor: const Color(0xFF1E293B),
+      colorText: Colors.white,
+      borderColor: const Color(0xFF22C55E),
+      borderWidth: 1.5,
+      margin: const EdgeInsets.all(16),
+      duration: const Duration(seconds: 4),
+    );
+
+    _syncProgressToDb();
   }
 
   /// Fetch dropout risk from the ML service and update [latestRisk].
@@ -214,6 +303,7 @@ class GamificationController extends GetxController {
     if (level > oldLevel) {
       // Could trigger level-up animation here
     }
+    _syncProgressToDb();
   }
 
   void _unlockBadge(String badgeId) {
@@ -224,6 +314,7 @@ class GamificationController extends GetxController {
     newlyUnlocked.value = badge;
     // Auto-clear after animation
     Future.delayed(const Duration(seconds: 4), () => newlyUnlocked.value = null);
+    _syncProgressToDb();
   }
 
   void clearBadgeOverlay() => newlyUnlocked.value = null;

@@ -21,23 +21,22 @@ from fastapi import APIRouter, HTTPException
 sys.path.insert(0, str(Path(__file__).resolve().parents[3]))
 
 from ML.api.schemas import CodeReviewRequest, CodeReviewResponse
-from ML.code_review.codebert_evaluator import (
-    CodeBertEvaluator,
+from ML.code_review.finetuned_evaluator import (
+    FinetunedCodeBertEvaluator,
     RUBRIC_WEIGHTS,
     _REDIS_SORTED_SET,
 )
 
 router = APIRouter(prefix="/code-review", tags=["Code Review & VSS"])
 
-# Singleton evaluator (loads API key from env)
-_evaluator: CodeBertEvaluator | None = None
+# Singleton evaluator (loads fine-tuned model weights from ML/code_review/finetuned_model/)
+_evaluator: FinetunedCodeBertEvaluator | None = None
 
 
-def get_evaluator() -> CodeBertEvaluator:
+def get_evaluator() -> FinetunedCodeBertEvaluator:
     global _evaluator
     if _evaluator is None:
-        api_key = os.getenv("HUGGINGFACE_API_KEY")
-        _evaluator = CodeBertEvaluator(api_key=api_key)
+        _evaluator = FinetunedCodeBertEvaluator()
     return _evaluator
 
 

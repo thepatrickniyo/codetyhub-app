@@ -10,8 +10,9 @@ scikit-learn>=1.4.0
 xgboost>=2.0.0
 
 # ── Deep Learning / NLP ───────────────────────────────────────────────────────
-transformers>=4.40.0       # CodeBERT tokenisation (optional, for local inference)
-torch>=2.2.0               # Required by transformers (optional)
+transformers>=4.40.0       # CodeBERT tokenisation and fine-tuning
+torch>=2.2.0               # Required by transformers
+datasets>=2.19.0           # HuggingFace dataset utilities for fine-tuning
 requests>=2.31.0           # HuggingFace Inference API HTTP calls
 
 # ── API / Web ─────────────────────────────────────────────────────────────────
@@ -26,3 +27,6 @@ pydantic>=2.7.0
 
 # ── Utilities ─────────────────────────────────────────────────────────────────
 python-dotenv>=1.0.1       # Load .env variables for API keys
+
+# ── Training Visualisation ────────────────────────────────────────────────────
+matplotlib>=3.8.0          # Training graphs (train_all.py)

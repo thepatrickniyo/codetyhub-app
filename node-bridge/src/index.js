@@ -34,9 +34,11 @@ const express = require('express');
 const cors = require('cors');
 const morgan = require('morgan');
 
+const db = require('./db');
 const pathwayRouter = require('./routes/pathway');
 const gamificationRouter = require('./routes/gamification');
 const codeReviewRouter = require('./routes/codeReview');
+const authRouter = require('./routes/auth');
 
 const app = express();
 const PORT = parseInt(process.env.PORT || '3001', 10);
@@ -56,6 +58,10 @@ app.get('/', (req, res) => {
     status: 'ok',
     ml_api: ML_API_URL,
     routes: [
+      'POST /api/auth/register',
+      'POST /api/auth/login',
+      'GET  /api/auth/progress/:userId',
+      'POST /api/auth/progress/sync',
       'POST /api/pathway/recommend',
       'GET  /api/pathway/graph/info',
       'GET  /api/pathway/graph/prerequisites/:skillId',
@@ -72,6 +78,7 @@ app.get('/', (req, res) => {
 app.get('/health', (req, res) => res.json({ status: 'ok' }));
 
 // ── Routers ────────────────────────────────────────────────────────────────────
+app.use('/api/auth', authRouter);
 app.use('/api/pathway', pathwayRouter);
 app.use('/api/gamification', gamificationRouter);
 app.use('/api/code-review', codeReviewRouter);
@@ -96,10 +103,11 @@ app.use((err, req, res, next) => {
 
 // ── Start ──────────────────────────────────────────────────────────────────────
 if (require.main === module) {
-  app.listen(PORT, () => {
+  app.listen(PORT, async () => {
     console.log(`\n🚀 CodetyHub Node Bridge running on http://localhost:${PORT}`);
     console.log(`   ML API target: ${ML_API_URL}`);
-    console.log(`   Routes: /api/pathway | /api/gamification | /api/code-review\n`);
+    console.log(`   Routes: /api/auth | /api/pathway | /api/gamification | /api/code-review\n`);
+    await db.initDatabase();
   });
 }
 

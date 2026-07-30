@@ -1,6 +1,7 @@
 import 'package:get_storage/get_storage.dart';
 
 import '../models/user_model.dart';
+import 'ml_service.dart';
 
 class AuthService {
   AuthService(this._storage);
@@ -9,6 +10,9 @@ class AuthService {
 
   static const _usersKey = 'registered_users';
   static const _sessionKey = 'current_user';
+  static const _progressKey = 'user_progress_cache';
+
+  final MlService _mlService = MlService();
 
   List<UserModel> get _users {
     final raw = _storage.read<List<dynamic>>(_usersKey);
@@ -24,6 +28,12 @@ class AuthService {
     return UserModel.fromJson(Map<String, dynamic>.from(raw));
   }
 
+  Map<String, dynamic>? get userProgress {
+    final raw = _storage.read<Map<dynamic, dynamic>>(_progressKey);
+    if (raw == null) return null;
+    return Map<String, dynamic>.from(raw);
+  }
+
   bool get isLoggedIn => currentUser != null;
 
   Future<UserModel> signUp({
@@ -33,6 +43,38 @@ class AuthService {
   }) async {
     final normalizedEmail = email.trim().toLowerCase();
 
+    // Try Node Bridge / PostgreSQL first
+    try {
+      final res = await _mlService.registerUser(
+        name: name,
+        email: normalizedEmail,
+        password: password,
+      );
+
+      if (res != null && res['success'] == true && res['user'] != null) {
+        final uData = Map<String, dynamic>.from(res['user'] as Map);
+        final user = UserModel(
+          id: uData['id'].toString(),
+          name: uData['name'].toString(),
+          email: uData['email'].toString(),
+          password: password,
+        );
+
+        if (res['progress'] != null) {
+          await _storage.write(_progressKey, res['progress']);
+        }
+
+        await _storage.write(_sessionKey, user.toJson());
+        return user;
+      } else if (res != null && res['error'] != null) {
+        throw Exception(res['error']);
+      }
+    } catch (e) {
+      if (e.toString().contains('already exists')) rethrow;
+      print('[AuthService] Node bridge signup fallback to local: $e');
+    }
+
+    // Local Fallback
     if (_users.any((u) => u.email == normalizedEmail)) {
       throw Exception('An account with this email already exists.');
     }
@@ -60,6 +102,37 @@ class AuthService {
   }) async {
     final normalizedEmail = email.trim().toLowerCase();
 
+    // Try Node Bridge / PostgreSQL first
+    try {
+      final res = await _mlService.loginUser(
+        email: normalizedEmail,
+        password: password,
+      );
+
+      if (res != null && res['success'] == true && res['user'] != null) {
+        final uData = Map<String, dynamic>.from(res['user'] as Map);
+        final user = UserModel(
+          id: uData['id'].toString(),
+          name: uData['name'].toString(),
+          email: uData['email'].toString(),
+          password: password,
+        );
+
+        if (res['progress'] != null) {
+          await _storage.write(_progressKey, res['progress']);
+        }
+
+        await _storage.write(_sessionKey, user.toJson());
+        return user;
+      } else if (res != null && res['error'] != null) {
+        throw Exception(res['error']);
+      }
+    } catch (e) {
+      if (e.toString().contains('Invalid email or password')) rethrow;
+      print('[AuthService] Node bridge login fallback to local: $e');
+    }
+
+    // Local Fallback
     final user = _users.cast<UserModel?>().firstWhere(
           (u) => u!.email == normalizedEmail && u.password == password,
           orElse: () => null,
@@ -75,5 +148,6 @@ class AuthService {
 
   Future<void> logout() async {
     await _storage.remove(_sessionKey);
+    await _storage.remove(_progressKey);
   }
 }
