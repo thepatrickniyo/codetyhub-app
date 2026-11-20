@@ -8,6 +8,7 @@ import '../controllers/quiz_controller.dart';
 import '../views/auth/login_view.dart';
 import '../views/auth/signup_view.dart';
 import '../views/home/home_view.dart';
+import '../views/legal/privacy_terms_view.dart';
 import '../views/pathway/pathway_detail_view.dart';
 import '../views/quiz/quiz_view.dart';
 import '../views/splash/splash_view.dart';
@@ -23,6 +24,7 @@ class AppRoutes {
   static const pathway = '/pathway/:id';
   static const quiz = '/quiz';
   static const course = '/course';
+  static const privacy = '/privacy';
 
   static String pathwayDetail(String id) => '/pathway/$id';
 
@@ -76,6 +78,11 @@ class AppRoutes {
       binding: BindingsBuilder(() {
         // CourseController is put by the caller before navigating
       }),
+    ),
+    GetPage(
+      name: privacy,
+      page: () => const PrivacyTermsView(),
+      transition: Transition.rightToLeft,
     ),
   ];
 }

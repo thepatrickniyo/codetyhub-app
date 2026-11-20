@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -20,9 +21,22 @@ class _SignupViewState extends State<SignupView> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   final _authController = Get.find<AuthController>();
+  bool _acceptedTerms = false;
+
+  late final TapGestureRecognizer _privacyTap = TapGestureRecognizer()
+    ..onTap = () => _openLegal(0);
+  late final TapGestureRecognizer _termsTap = TapGestureRecognizer()
+    ..onTap = () => _openLegal(1);
+
+  void _openLegal(int tab) {
+    FocusScope.of(context).unfocus();
+    Get.toNamed(AppRoutes.privacy, arguments: {'tab': tab});
+  }
 
   @override
   void dispose() {
+    _privacyTap.dispose();
+    _termsTap.dispose();
     _nameController.dispose();
     _emailController.dispose();
     _passwordController.dispose();
@@ -140,6 +154,91 @@ class _SignupViewState extends State<SignupView> {
                       return 'Passwords do not match';
                     }
                     return null;
+                  },
+                ),
+                const SizedBox(height: 16),
+                FormField<bool>(
+                  initialValue: _acceptedTerms,
+                  validator: (_) => _acceptedTerms
+                      ? null
+                      : 'You must accept the Privacy Policy and Terms to continue',
+                  builder: (field) {
+                    final linkStyle = TextStyle(
+                      color: AppColors.primaryLight,
+                      fontWeight: FontWeight.w600,
+                      decoration: TextDecoration.underline,
+                    );
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: Checkbox(
+                                key: const Key('signup_terms_checkbox'),
+                                value: _acceptedTerms,
+                                activeColor: AppColors.primary,
+                                side: BorderSide(
+                                  color: field.hasError
+                                      ? AppColors.error
+                                      : AppColors.textSecondary,
+                                ),
+                                onChanged: (v) {
+                                  setState(() => _acceptedTerms = v ?? false);
+                                  field.didChange(_acceptedTerms);
+                                },
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text.rich(
+                                TextSpan(
+                                  style: TextStyle(
+                                    color: AppColors.textSecondary,
+                                    fontSize: 13.5,
+                                    height: 1.4,
+                                  ),
+                                  children: [
+                                    const TextSpan(
+                                      text: 'I have read and agree to the ',
+                                    ),
+                                    TextSpan(
+                                      text: 'Privacy Policy',
+                                      style: linkStyle,
+                                      recognizer: _privacyTap,
+                                    ),
+                                    const TextSpan(text: ' and '),
+                                    TextSpan(
+                                      text: 'Terms of Use',
+                                      style: linkStyle,
+                                      recognizer: _termsTap,
+                                    ),
+                                    const TextSpan(
+                                      text: ', and consent to CodetyHub '
+                                          'processing my data as described.',
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (field.hasError)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 6, left: 36),
+                            child: Text(
+                              field.errorText!,
+                              style: TextStyle(
+                                color: AppColors.error,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                      ],
+                    );
                   },
                 ),
                 const SizedBox(height: 12),

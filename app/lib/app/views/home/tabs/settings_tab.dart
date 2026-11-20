@@ -179,8 +179,8 @@ class SettingsTab extends StatelessWidget {
                     icon: Icons.privacy_tip_outlined,
                     iconColor: const Color(0xFF8B5CF6),
                     title: 'Privacy',
-                    subtitle: 'Manage your data',
-                    onTap: () {},
+                    subtitle: 'Privacy policy & terms',
+                    onTap: () => Get.toNamed(AppRoutes.privacy),
                   ),
 
                   const SizedBox(height: 28),
